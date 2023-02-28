@@ -10,8 +10,6 @@ project(
 include_directories(external)
 include_directories(src)
 
-# add_library(glad include/glad/glad.c)
-
 add_executable(${PROJECT_NAME}
 	src/main.cpp
 	src/Cube.cpp
@@ -31,6 +29,7 @@ add_executable(${PROJECT_NAME}
 )
 
 add_subdirectory(external/glad)
+add_subdirectory(external/glfw)
 
 # TODO: might have to add -lGL -lGLU if opengl doesn't link properly
-target_link_libraries(${PROJECT_NAME} glad libglfw3.a -ldl -lm -lpthread -lX11)
+target_link_libraries(${PROJECT_NAME} glad glfw)# -ldl -lm -lpthread -lX11)

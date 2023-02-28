@@ -78,7 +78,7 @@ void Image::saveBmp(const string& path) const
 		0, 0, 0, 0,																		 /// important color count
 	};
 
-	char data[stride * height]{0};
+	char* data = new char[dataSize]{0};
 	for (int y = 0; y < height; y++)
 	{
 		for (int x = 0; x < width; x++)
