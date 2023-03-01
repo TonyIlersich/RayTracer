@@ -26,6 +26,8 @@ add_executable(${PROJECT_NAME}
 	src/Scene.cpp
 	src/SceneObject.cpp
 	src/Sphere.cpp
+	src/Timer.cpp
+	src/Window.cpp
 )
 
 add_subdirectory(external/glad)

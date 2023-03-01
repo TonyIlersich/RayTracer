@@ -7,53 +7,29 @@
 #include "Image.h"
 #include "Scene.h"
 #include "Sphere.h"
+#include "Timer.h"
+#include "Window.h"
 using namespace std;
 using namespace glm;
 
 // #define RENDER_IMAGE
 // #define SINGLE_RAY
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
+#define LOG_FPS
 
 int main()
 {
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	Window window;
+	Timer frameRateTimer;
 
-#ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	while(!window.shouldClose())
+	{
+		window.update();
+#ifdef LOG_FPS
+		cerr << "\rframerate: " << setw(5) << fixed << setprecision(1) << 1'000.f / chrono::duration_cast<chrono::milliseconds>(frameRateTimer.lap()).count();
 #endif
-
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Ray Tracer", nullptr, nullptr);
-	if (window == nullptr)
-	{
-		cerr << "Failed to create GLFW window\n";
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-	if (gladLoadGL())
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		cerr << "Failed to initialize GLAD\n";
-		glfwTerminate();
-		return -1;
 	}
 
-	while(!glfwWindowShouldClose(window))
-	{
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-
-	glfwTerminate();
 	return 0;
 }
 
