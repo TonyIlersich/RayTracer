@@ -12,12 +12,12 @@ Image::Image(int width, int height, const vec3& fill):
 
 vec3& Image::operator()(int x, int y)
 {
-	return pixels[x + y * width];
+	return pixels[clamp(x, 0, width - 1) + clamp(y, 0, height - 1) * width];
 }
 
 const vec3& Image::operator()(int x, int y) const
 {
-	return pixels[x + y * width];
+	return pixels[clamp(x, 0, width - 1) + clamp(y, 0, height - 1) * width];
 }
 
 int Image::getWidth() const

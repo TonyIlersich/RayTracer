@@ -12,19 +12,26 @@ include_directories(src)
 
 add_executable(${PROJECT_NAME}
 	src/main.cpp
+	src/ComputeShader.cpp
 	src/Cube.cpp
 	src/Cylinder.cpp
+	src/Disc.cpp
 	src/Eye.cpp
-	src/HalfSpace.cpp
+	src/Game.cpp
 	src/Hit.cpp
 	src/Image.cpp
 	src/Material.cpp
+	src/MaterialFactory.cpp
+	src/Mesh.cpp
+	src/NhPlane.cpp
 	src/Plane.cpp
 	src/Quad.cpp
 	src/Random.cpp
 	src/Ray.cpp
 	src/Scene.cpp
+	src/SceneFactory.cpp
 	src/SceneObject.cpp
+	src/ShaderProgram.cpp
 	src/Sphere.cpp
 	src/Timer.cpp
 	src/Window.cpp

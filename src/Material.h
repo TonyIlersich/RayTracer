@@ -9,34 +9,23 @@
 class Material
 {
 public:
-
-	struct EmissionInfo
-	{
-		glm::vec3 diffuse = glm::vec3(0);
-		glm::vec3 directed = glm::vec3(0);
-	};
-
-	struct ReflectionInfo
-	{
-		glm::vec3 strength = glm::vec3(0);
-		float glossiness = 0.0f;
-	};
-
-	struct RefractionInfo
-	{
-		glm::vec3 strength = glm::vec3(0);
-		float glossiness = 0.0f;
-		float index = refractiveIndexAir;
-	};
-
+	Material() = default;
 	Material(
-		const EmissionInfo& emission = { black, black },
-		const ReflectionInfo& reflection = { black, 0.f },
-		const RefractionInfo& refraction = { black, 0.f, refractiveIndexAir });
+		const glm::vec3& diffuseEmission,
+		const glm::vec3& directedEmission,
+		const glm::vec3& albedo,
+		float refractivity,
+		float refractiveIndex,
+		float glossiness);
 
-	EmissionInfo emission;
-	ReflectionInfo reflection;
-	RefractionInfo refraction;
+	glm::vec3 diffuseEmission;
+	glm::vec3 directedEmission;
+	glm::vec3 albedo;
+	float refractivity;
+	float refractiveIndex;
+	float glossiness;
 };
+
+std::ostream& operator<<(std::ostream& out, const Material& mat);
 
 #endif

@@ -1,22 +1,33 @@
+#include "constants.h"
 #include "Cube.h"
-#include "Quad.h"
+#include "surfaces.h"
 using namespace glm;
 
-static const Quad sides[6]{
-	Quad(vec3(-1,-1, 1), vec3( 2, 0, 0), vec3( 0, 2, 0)), // front
-	Quad(vec3( 1,-1,-1), vec3(-2, 0, 0), vec3( 0, 2, 0)), // back
-	Quad(vec3(-1,-1,-1), vec3( 0, 0, 2), vec3( 0, 2, 0)), // left
-	Quad(vec3( 1,-1, 1), vec3( 0, 0,-2), vec3( 0, 2, 0)), // right
-	Quad(vec3(-1, 1, 1), vec3( 2, 0, 0), vec3( 0, 0,-2)), // top
-	Quad(vec3(-1,-1,-1), vec3( 2, 0, 0), vec3( 0, 0, 2))  // bottom
+static const mat4 sideTrans[6]{
+	inverse(translate(identityTrans, upward)), // top
+	inverse(translate(scale(identityTrans, vec3(1,-1,1)), upward)), // bottom
+	inverse(translate(rotate(identityTrans, tau * 0.25f, forward), upward)), // left
+	inverse(translate(rotate(identityTrans, tau * -0.25f, forward), upward)), // right
+	inverse(translate(rotate(identityTrans, tau * 0.25f, rightward), upward)), // front
+	inverse(translate(rotate(identityTrans, tau * -0.25f, rightward), upward)), // back
 };
+
+Surface::SurfaceType Cube::getSurfaceType() const
+{
+	return SurfaceType::Cube;
+}
 
 bool Cube::intersect(const Ray &ray, Interval<float> &tInterval, Hit &hit) const
 {
 	bool result = false;
-	for (auto& s : sides)
+	for (auto& trans : sideTrans)
 	{
-		result |= s.intersect(ray, tInterval, hit);
+		const Ray localRay = trans * ray;
+		if(surfaces::quad.intersect(localRay, tInterval, hit))
+		{
+			result = true;
+			hit.applyTransform(trans);
+		}
 	}
 	return result;
 }

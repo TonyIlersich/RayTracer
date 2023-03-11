@@ -45,6 +45,28 @@
 		"streambuf": "cpp",
 		"typeinfo": "cpp",
 		"random": "cpp",
-		"chrono": "cpp"
-	}
+		"chrono": "cpp",
+		"ios": "cpp",
+		"list": "cpp",
+		"locale": "cpp",
+		"ratio": "cpp",
+		"xfacet": "cpp",
+		"xhash": "cpp",
+		"xiosbase": "cpp",
+		"xlocale": "cpp",
+		"xlocbuf": "cpp",
+		"xlocinfo": "cpp",
+		"xlocmes": "cpp",
+		"xlocmon": "cpp",
+		"xlocnum": "cpp",
+		"xloctime": "cpp",
+		"xmemory": "cpp",
+		"xmemory0": "cpp",
+		"xstddef": "cpp",
+		"xstring": "cpp",
+		"xtr1common": "cpp",
+		"xutility": "cpp",
+		"*.glsl": "cpp"
+	},
+	"cmake.configureOnOpen": false
 }

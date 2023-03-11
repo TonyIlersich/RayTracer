@@ -14,12 +14,12 @@ Hit::operator bool() const
 	return !isinf(t);
 }
 
-void Hit::applyTransform(const glm::mat4& delta)
+void Hit::applyTransform(const mat4& delta)
 {
-	// TODO: why does this work
+	// TODO: is this correct?
 	point = vec3(inverse(delta) * vec4(point, 1.f));
-	const mat3 inv = inverse(transpose(mat3(delta)));
-	normal = inv * normal;
-	u = inv * u;
-	v = inv * v;
+	const mat3 T = transpose(mat3(delta));
+	normal = T * normal;
+	u = T * u;
+	v = T * v;
 }

@@ -3,22 +3,45 @@
 using namespace std;
 using namespace glm;
 
-Eye::Eye(
-	const glm::vec3& origin,
-	const glm::vec3& forward,
-	const glm::vec3& up,
-	const glm::vec2& fov
-):
-	origin(origin),
-	forward(normalize(forward)),
-	up(normalize(up)),
+Eye::Eye(float fov, const mat4& trans):
+	trans(trans),
+	invtrans(inverse(trans)),
 	fov(fov),
-	right(cross(this->forward, this->up)),
-	toRightEdge(tan(fov.x * 0.5f) * right),
-	toTopEdge(tan(fov.y * 0.5f) * this->up)
+	edgeDist(tan(fov * 0.5f))
 {}
 
 Ray Eye::getRay(float x, float y) const
 {
-	return Ray(origin, forward + x * toRightEdge + y * toTopEdge);
+	return trans * Ray(vec3(0.f), vec3(x * edgeDist, y * edgeDist, -1.f));
+}
+
+void Eye::setFov(float fov)
+{
+	this->fov = fov;
+}
+
+void Eye::setTrans(const mat4& trans)
+{
+	this->trans = trans;
+	invtrans = inverse(trans);
+}
+
+void Eye::applyTrans(const mat4& trans)
+{
+	setTrans(trans * this->trans);
+}
+
+float Eye::getFov() const
+{
+	return fov;
+}
+
+const mat4& Eye::getTrans() const
+{
+	return trans;
+}
+
+const mat4& Eye::getInvtrans() const
+{
+	return invtrans;
 }

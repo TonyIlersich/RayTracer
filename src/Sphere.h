@@ -2,13 +2,14 @@
 #define SPHERE_H
 
 #include "includes.h"
-#include "Volume.h"
+#include "Surface.h"
 
-class Sphere : public Volume
+class Sphere : public Surface
 {
 public:
 	virtual ~Sphere() = default;
 
+	virtual SurfaceType getSurfaceType() const override;
 	virtual bool intersect(const Ray& ray, Interval<float>& tInterval, Hit& hit) const override;
 };
 

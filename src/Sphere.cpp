@@ -3,7 +3,12 @@
 using namespace std;
 using namespace glm;
 
-bool Sphere::intersect(const Ray& ray, Interval<float>& tInterval, Hit& hit) const
+Surface::SurfaceType Sphere::getSurfaceType() const
+{
+	return SurfaceType::Sphere;
+}
+
+bool Sphere::intersect(const Ray &ray, Interval<float> &tInterval, Hit &hit) const
 {
 	const float o2 = dot(ray.origin, ray.origin);
 	const float d2 = dot(ray.direction, ray.direction);

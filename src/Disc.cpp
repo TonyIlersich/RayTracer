@@ -1,18 +1,18 @@
 #include "Disc.h"
+#include "surfaces.h"
 using namespace glm;
 
-Disc::Disc(const vec3& origin, const vec3& basis1, const vec3& basis2):
-	plane(origin, basis1, basis2)
-{}
-
-bool Disc::intersect(const Ray& ray, Interval<float>& tInterval, Hit& hit) const
+Surface::SurfaceType Disc::getSurfaceType() const
 {
-	// TODO: consider using axis-aligned plane
+	return SurfaceType::Disc;
+}
+
+bool Disc::intersect(const Ray &ray, Interval<float> &tInterval, Hit &hit) const
+{
 	Interval<float> tempInterval(tInterval);
 	Hit tempHit;
-	const bool tempResult = plane.intersect(ray, tempInterval, tempHit);
-	const vec3 fromCenter = tempHit.uv - vec2(0.5f);
-	if (tempResult && dot(fromCenter, fromCenter) <= .25f)
+	const bool tempResult = surfaces::plane.intersect(ray, tempInterval, tempHit);
+	if (tempResult && dot(tempHit.uv, tempHit.uv) <= 1.f)
 	{
 		tInterval = tempInterval;
 		hit = tempHit;

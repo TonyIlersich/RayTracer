@@ -4,30 +4,31 @@
 #include "includes.h"
 #include "Ray.h"
 #include "Scene.h"
+#include "constants.h"
 
 class Eye
 {
 public:
-	Eye(const glm::vec3& origin, const glm::vec3& forward, const glm::vec3& up, const glm::vec2& fov);
+	Eye(float fov, const glm::mat4& trans = identityTrans);
 
-	// x,y in [-1,+1]
+	// x,y = +/-1 correspond to the edges of a view square with given fov
 	Ray getRay(float x, float y) const;
 
-	void setOrigin(const glm::vec3& origin);
-	void setFacing(const glm::vec3& forward, const glm::vec3& up);
-	void setFov(const glm::vec2& fov);
-	void transform(const glm::mat4& trans);
+	void setFov(float fov);
+	void setTrans(const glm::mat4& trans);
+	void applyTrans(const glm::mat4& trans);
+
+	float getFov() const;
+	const glm::mat4& getTrans() const;
+	const glm::mat4& getInvtrans() const;
 
 private:
-	glm::vec3 origin;
-	glm::vec3 forward;
-	glm::vec3 up;
-	glm::vec2 fov;
+	glm::mat4 trans;
+	glm::mat4 invtrans;
+	float fov;
 
 	// cached
-	glm::vec3 right;
-	glm::vec3 toRightEdge;
-	glm::vec3 toTopEdge;
+	float edgeDist;
 };
 
 #endif

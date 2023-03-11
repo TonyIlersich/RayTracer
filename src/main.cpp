@@ -1,162 +1,101 @@
 #include "includes.h"
-#include "utils.h"
-#include "Eye.h"
-#include "Cube.h"
 #include "colors.h"
-#include "HalfSpace.h"
+#include "Cube.h"
+#include "Eye.h"
+#include "Game.h"
 #include "Image.h"
 #include "Scene.h"
+#include "SceneFactory.h"
 #include "Sphere.h"
 #include "Timer.h"
+#include "utils.h"
 #include "Window.h"
 using namespace std;
 using namespace glm;
 
-// #define RENDER_IMAGE
-// #define SINGLE_RAY
-
-#define LOG_FPS
-
+// /* Render to window
 int main()
 {
-	Window window;
-	Timer frameRateTimer;
-
-	while(!window.shouldClose())
-	{
-		window.update();
-#ifdef LOG_FPS
-		cerr << "\rframerate: " << setw(5) << fixed << setprecision(1) << 1'000.f / chrono::duration_cast<chrono::milliseconds>(frameRateTimer.lap()).count();
-#endif
-	}
-
+	Game().run();
 	return 0;
 }
+/* */
+
+
 
 /* OLD: Image ray tracer
+#define SHOW_PROGRESS_BAR
+#define RENDER_IMAGE
+// #define TEST_RAY
+// #define TEST_EDGE_RAYS
+
 int main()
 {
-	Scene scene;
-	Cube cube;
-	Sphere sphere;
-	HalfSpace halfSpace;
-	Material mirror({}, { white });
-	Material glass({}, { 0.1f * white }, { 0.9f * white, 0.f, 1.2f });
-	Material matte({}, { gray, 1.f });
-	Material redLaser({ red, 0.2f * white }, { black }, { white });
-	Material greenLaser({ green, 0.2f * white }, { black }, { white });
-	Material blueLaser({ blue, 0.2f * white }, { black }, { white });
-	// Material glow({ 0.4f * red, 0.1f * white });
-
-	SceneObject* mirrorBall = new SceneObject();
-	mirrorBall->setVolume(&sphere);
-	mirrorBall->setMaterial(&mirror);
-	// mirrorBall->applyTransform(scale(mat4(1), vec3(1.5)));
-	mirrorBall->applyTransform(translate(mat4(1), vec3(-2.5,0,-7)));
-	scene.root.addChild(mirrorBall);
-
-	SceneObject* glassBall = new SceneObject();
-	glassBall->setVolume(&sphere);
-	glassBall->setMaterial(&glass);
-	glassBall->applyTransform(translate(mat4(1), vec3(.2f,.5f,-5.5)));
-	scene.root.addChild(glassBall);
-
-	SceneObject* redLaserBall = new SceneObject();
-	redLaserBall->setVolume(&sphere);
-	redLaserBall->setMaterial(&redLaser);
-	redLaserBall->applyTransform(scale(mat4(1), vec3(1.5)));
-	redLaserBall->applyTransform(translate(mat4(1), vec3(2,5,-8)));
-	scene.root.addChild(redLaserBall);
-
-	SceneObject* greenLaserBall = new SceneObject();
-	greenLaserBall->setVolume(&sphere);
-	greenLaserBall->setMaterial(&greenLaser);
-	greenLaserBall->applyTransform(scale(mat4(1), vec3(1.5)));
-	greenLaserBall->applyTransform(translate(mat4(1), vec3(-2,5,-8)));
-	scene.root.addChild(greenLaserBall);
-
-	SceneObject* blueLaserBall = new SceneObject();
-	blueLaserBall->setVolume(&sphere);
-	blueLaserBall->setMaterial(&blueLaser);
-	blueLaserBall->applyTransform(scale(mat4(1), vec3(1.5)));
-	blueLaserBall->applyTransform(translate(mat4(1), vec3(0,4,-9)));
-	scene.root.addChild(blueLaserBall);
-
-	// SceneObject* glowCube = new SceneObject();
-	// glowCube->setVolume(&cube);
-	// glowCube->setMaterial(&glow);
-	// glowCube->applyTransform(rotate(mat4(1), tau * 0.125f, vec3(0,1,0)));
-	// glowCube->applyTransform(translate(mat4(1), vec3(2,0,-9)));
-	// scene.root.addChild(glowCube);
-
-	// SceneObject* glowCube2 = new SceneObject();
-	// glowCube2->setVolume(&cube);
-	// glowCube2->setMaterial(&glow);
-	// glowCube2->applyTransform(rotate(mat4(1), tau * -1.f / 16.f, vec3(0,1,0)));
-	// glowCube2->applyTransform(translate(mat4(1), vec3(2.5,-1.1,-9)));
-	// scene.root.addChild(glowCube2);
-
-	// SceneObject* ground = new SceneObject();
-	// ground->setVolume(&sphere);
-	// ground->setMaterial(&matte);
-	// ground->applyTransform(scale(translate(mat4(1), vec3(0,-101,0)), vec3(100)));
-	// scene.root.addChild(ground);
-
-	SceneObject* ground = new SceneObject();
-	ground->setVolume(&halfSpace);
-	ground->setMaterial(&matte);
-	ground->applyTransform(translate(mat4(1), vec3(0,-1,0)));
-	scene.root.addChild(ground);
-
-	Eye eye(vec3(0,1,0), vec3(0,0,-1), vec3(0,1,0), vec2(radians(60.f)));
+	Scene* scene = SceneFactory::createSampleScene();
+	Eye eye(radians(60.f), translate(identityTrans, vec3(0, 2, 2)));
 
 #ifdef RENDER_IMAGE
 	Image image(1920, 1080);
+	constexpr int skip = 1;
+	constexpr int offset = 0;
 	constexpr int super = 2;
-	const vec2 pixelSize = 2.f / vec2(image.getWidth(), image.getHeight());
-	const vec2 sampleSize = pixelSize / float(super);
+	const int imageMajorAxis = glm::max(image.getWidth(), image.getHeight());
+	const int imageMinorAxis = glm::min(image.getWidth(), image.getHeight());
 	auto start = chrono::system_clock::now();
 	for (int x = 0; x < image.getWidth(); x++)
 	{
-		const float progress = x / (image.getWidth() - 1.f);
-		const int progressBarWidth = 50;
-		const int ticks = progress * progressBarWidth;
-		cerr << "\r[" << string(ticks, '=') << string(progressBarWidth - ticks, ' ') << "] " << setw(3) << floor(progress * 100.f) << '%';
-		for (int y = 0; y < image.getHeight(); y++)
+#ifdef SHOW_PROGRESS_BAR
+		if (x % 10 == 0)
 		{
-			// image(x, y) = scene.getRayColor(
-			// 	eye.getRay(
-			// 		2.f * x / (image.getWidth() - 1) - 1.f,
-			// 		-(2.f * y / (image.getHeight() - 1) - 1.f)
-			// 	)
-			// );
-
+			const float progress = x / (image.getWidth() - 1.f);
+			const int progressBarWidth = 50;
+			const int ticks = int(progress * progressBarWidth);
+			cerr << "\r[" << setw(ticks) << setfill('=') << "" << setw(progressBarWidth - ticks) << setfill(' ') << "" << "] "
+				<< setw(3) << floor(progress * 100.f) << '%';
+		}
+#endif
+		for (int y = offset; y < image.getHeight(); y += skip)
+		{
 			for (int sx = 0; sx < super; sx++)
 			{
 				for (int sy = 0; sy < super; sy++)
 				{
-					image(x, y) += scene.getRayColor(
-						eye.getRay(
-							2.f * x / (image.getWidth() - 1) - 1.f + sampleSize.x * sx,
-							-(2.f * y / (image.getHeight() - 1) - 1.f + sampleSize.y * sy)
-						)
-					);
+					image(x, y) += scene->getRayColor(eye.getRay(
+						2.f * ((x + (sx + 0.5f) / super) - image.getWidth()  / 2) / imageMajorAxis,
+						-2.f * ((y + (sy + 0.5f) / super) - image.getHeight() / 2) / imageMajorAxis));
 				}
 			}
 			image(x, y) /= super * super;
 		}
 	}
+#ifdef SHOW_PROGRESS_BAR
 	cerr << '\n';
+#endif
 	auto end = chrono::system_clock::now();
-	cerr << "Rendered in " << (end - start).count() / 1000'000'000 << "s\n";
+	cerr << "Rendered in " << chrono::duration_cast<chrono::seconds>(end - start).count() << "s\n";
 	image.saveBmp("output.bmp");
 #endif
 
-#ifdef SINGLE_RAY
-	cerr << glass.refraction.index << '\n';
-	cerr << scene.getRayColor(eye.getRay(0.25f, 0.f)) << '\n';
+#ifdef TEST_RAY
+	Ray ray = eye.getRay( 0.f,  0.5f);
+	cerr << "Ray:    " << ray << '\n';
+	cerr << " color: " << scene->getRayColor(ray) << '\n';
 #endif
 
+#ifdef TEST_EDGE_RAYS
+	cerr << "Center:      " << eye.getRay( 0.f,  0.f) << '\n';
+	cerr << " color:      " << scene->getRayColor(eye.getRay( 0.f,  0.f)) << '\n';
+	cerr << "TopLeft:     " << eye.getRay(-1.f,  1.f) << '\n';
+	cerr << " color:      " << scene->getRayColor(eye.getRay(-1.f,  1.f)) << '\n';
+	cerr << "TopRight:    " << eye.getRay( 1.f,  1.f) << '\n';
+	cerr << " color:      " << scene->getRayColor(eye.getRay( 1.f,  1.f)) << '\n';
+	cerr << "BottomLeft:  " << eye.getRay(-1.f, -1.f) << '\n';
+	cerr << " color:      " << scene->getRayColor(eye.getRay(-1.f, -1.f)) << '\n';
+	cerr << "BottomRight: " << eye.getRay( 1.f, -1.f) << '\n';
+	cerr << " color:      " << scene->getRayColor(eye.getRay( 1.f, -1.f)) << '\n';
+#endif
+
+	delete scene;
 	return 0;
 }
-*/
+/* */

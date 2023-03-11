@@ -4,15 +4,13 @@
 #include "includes.h"
 #include "Plane.h"
 
-class Quad : public Hittable
+class Quad : public Plane
 {
 public:
-	Quad(const glm::vec3& origin, const glm::vec3& basis1, const glm::vec3& basis2);
 	virtual ~Quad() = default;
 
+	virtual SurfaceType getSurfaceType() const override;
 	virtual bool intersect(const Ray& ray, Interval<float>& tInterval, Hit& hit) const override;
-
-	Plane plane;
 };
 
 #endif
