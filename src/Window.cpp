@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "utils.h"
 using namespace std;
 using namespace glm;
 
@@ -27,6 +28,17 @@ Window::Window(): wrapped(nullptr), keyStates{KF_NONE}
 	}
 	glfwMakeContextCurrent(wrapped);
 	glfwSetFramebufferSizeCallback(wrapped, framebuffer_size_callback);
+
+	glfwSetInputMode(wrapped, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Lock cursor to window
+	glfwSetCursorPos(wrapped, 0.0, 0.0);
+	if (!glfwRawMouseMotionSupported())
+	{
+		cerr << "Raw mouse motion not supported\n";
+		glfwTerminate();
+		throw runtime_error("Raw mouse motion not supported");
+	}
+	glfwSetInputMode(wrapped, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
 	glfwSwapInterval(1); // Vsync
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -46,6 +58,7 @@ void Window::pollEvents()
 {
 	glfwPollEvents();
 	updateKeyStates();
+	updateMouseState();
 
 	if (getKeyDown(GLFW_KEY_ESCAPE))
 	{
@@ -77,6 +90,11 @@ bool Window::getKeyDown(int key) const
 bool Window::getKeyFresh(int key) const
 {
 	return keyStates[key] & KF_FRESH;
+}
+
+const vec2& Window::getMouseDelta() const
+{
+	return mouseDelta;
 }
 
 ivec2 Window::getSize() const
@@ -118,4 +136,12 @@ void Window::updateKeyStates()
 			}
 		}
 	}
+}
+
+void Window::updateMouseState()
+{
+	double dx, dy;
+	glfwGetCursorPos(wrapped, &dx, &dy);
+	mouseDelta = vec2(dx, dy);
+	glfwSetCursorPos(wrapped, 0.0, 0.0);
 }

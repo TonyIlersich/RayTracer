@@ -167,7 +167,28 @@ void Game::run()
 
 void Game::update()
 {
-	// TODO
+	// Move eye
+	bool didMoveEye = false;
+	vec3 velocity(
+		window.getKeyDown(GLFW_KEY_D)     - window.getKeyDown(GLFW_KEY_A),
+		window.getKeyDown(GLFW_KEY_SPACE) - window.getKeyDown(GLFW_KEY_LEFT_CONTROL),
+		window.getKeyDown(GLFW_KEY_S)     - window.getKeyDown(GLFW_KEY_W));
+	if (velocity != vec3(0))
+	{
+		eye.applyTrans(translate(identityTrans, mat3(eye.getTrans()) * velocity * 1.f/60.f));
+		didMoveEye = true;
+	}
+	if (window.getMouseDelta() != vec2(0))
+	{
+		// TODO: add vertical rotation
+		eye.setTrans(rotate(eye.getTrans(), tau * -0.2f * window.getMouseDelta().x / window.getSize().y, upward));
+		didMoveEye = true;
+	}
+	if (didMoveEye)
+	{
+		shaderProgram.bind();
+		shaderProgram.setUniform("eyeTrans", eye.getTrans());
+	}
 }
 
 void Game::render()
