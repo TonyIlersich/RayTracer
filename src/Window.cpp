@@ -9,7 +9,10 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-Window::Window(): wrapped(nullptr), keyStates{KF_NONE}
+Window::Window():
+	wrapped(nullptr),
+	keyStates{KF_NONE},
+	mouseDelta(0.f)
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -39,7 +42,7 @@ Window::Window(): wrapped(nullptr), keyStates{KF_NONE}
 	}
 	glfwSetInputMode(wrapped, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-	glfwSwapInterval(1); // Vsync
+	glfwSwapInterval(0); // Vsync interval
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{

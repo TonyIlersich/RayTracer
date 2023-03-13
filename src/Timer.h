@@ -8,7 +8,8 @@ class Timer
 public:
 	Timer();
 
-	std::chrono::steady_clock::duration lap();
+	float lap();
+	float getTime() const;
 
 private:
 	std::chrono::steady_clock::time_point start;

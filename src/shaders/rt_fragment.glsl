@@ -17,27 +17,52 @@ const uint SURFACE_TYPE_PLANE    = SURFACE_TYPE_DISC + 1u;
 const uint SURFACE_TYPE_QUAD     = SURFACE_TYPE_PLANE + 1u;
 const uint SURFACE_TYPE_SPHERE   = SURFACE_TYPE_QUAD + 1u;
 
-const uint NO_HIT = 0xffffffffu;
-
 const float RAY_EPSILON = 1e-4;
-const uint MAX_RAY_BOUNCES = 5u;
+const uint MAX_RAY_BOUNCES = 4u;
 const vec3 MIN_RAY_SIGNIFICANCE = vec3(0.001);
+// const uint SAMPLES_PER_PIXEL = 1u;
 
 const uint MAX_SURFACES = 64u;
 const uint MAX_MATERIALS = 16u;
 
+uniform float time;
+
 // NOTE: vec3 is same size as vec4
 
-// size = 4096 + 256 + 256 + 192 + 192 + 4 = 4996 < 16384 = maximum
+// size = 4096 + 256 + 256 + 256 + 256 + 64 + 4 = 5188 < 16384 = minimum guaranteed
 layout(packed) uniform SceneBlock
 {
-	mat4 worldToLocal[MAX_SURFACES];      // size = sizeof(mat4) * MAX_SURFACES  = 64 * 64 = 4096
-	uint surfaceType[MAX_SURFACES];       // size = sizeof(uint) * MAX_SURFACES  =  4 * 64 = 256
-	uint surfaceMaterialId[MAX_SURFACES]; // size = sizeof(uint) * MAX_SURFACES  =  4 * 64 = 256
-	vec3 materialEmission[MAX_MATERIALS]; // size = sizeof(vec3) * MAX_MATERIALS = 16 * 16 = 192
-	vec4 materialAlbedo[MAX_MATERIALS];   // size = sizeof(vec4) * MAX_MATERIALS = 16 * 16 = 192
-	uint surfaceCount;                    // size = sizeof(uint)                           = 4
+	mat4  worldToLocal[MAX_SURFACES];        // size = sizeof(mat4) * MAX_SURFACES  = 64 * 64 = 4096
+	uint  surfaceType[MAX_SURFACES];         // size = sizeof(uint) * MAX_SURFACES  =  4 * 64 = 256
+	uint  surfaceMaterialId[MAX_SURFACES];   // size = sizeof(uint) * MAX_SURFACES  =  4 * 64 = 256
+	vec3  materialEmission[MAX_MATERIALS];   // size = sizeof(vec3) * MAX_MATERIALS = 16 * 16 = 256
+	vec4  materialAlbedo[MAX_MATERIALS];     // size = sizeof(vec4) * MAX_MATERIALS = 16 * 16 = 256
+	float materialGlossiness[MAX_MATERIALS]; // size = sizeof(float) * MAX_MATERIALS = 4 * 16 = 64
+	uint  surfaceCount;                      // size = sizeof(uint)                           = 4
 };
+
+// Forward declare functions from common.glsl
+uint hash(uint seed);
+float unoise1(uint seed);
+float unoise1(float seed);
+float unoise1(vec2 seed);
+float unoise1(vec3 seed);
+float unoise1(vec4 seed);
+vec2 unoise2(uint seed);
+vec2 unoise2(float seed);
+vec2 unoise2(vec2 seed);
+vec2 unoise2(vec3 seed);
+vec2 unoise2(vec4 seed);
+vec3 unoise3(uint seed);
+vec3 unoise3(float seed);
+vec3 unoise3(vec2 seed);
+vec3 unoise3(vec3 seed);
+vec3 unoise3(vec4 seed);
+vec4 unoise4(uint seed);
+vec4 unoise4(float seed);
+vec4 unoise4(vec2 seed);
+vec4 unoise4(vec3 seed);
+vec4 unoise4(vec4 seed);
 
 // Returns the least number that is above threshold, or if there no such number, a number that is below or equal to the threshold
 float minThreshold(float a, float b, float threshold)
@@ -46,10 +71,10 @@ float minThreshold(float a, float b, float threshold)
 }
 
 void doBounce(
-	in vec3 normal, in uint materialId,
+	in vec3 point, in vec3 normal, in uint materialId,
 	inout vec3 colorSoFar, inout vec3 rayDirection, inout vec3 bounceSignificance)
 {
-	vec3 apparentNormal = normal * -sign(dot(rayDirection, normal));
+	vec3 apparentNormal = normalize(normal * -sign(dot(rayDirection, normal)));
 
 	// Calculate the color of this bounce (local sources only)
 	vec3 bounceColor = materialEmission[materialId] * max(0.0, -dot(normalize(rayDirection), normalize(normal)));
@@ -61,12 +86,19 @@ void doBounce(
 	bounceSignificance *= materialAlbedo[materialId].rgb;
 
 	// Calculate the bounce direction
-	// TODO: make probabilistic with refraction chance = materialAlbedo[materialId].a
 	// TODO: calculate eta and handle TIR
-	// TODO: add gloss
-	vec3 refractDirection = refract(rayDirection, apparentNormal, 1.0);
-	bool willRefract = true; // refractDirection != vec3(0.0) && (materialAlbedo[materialId].a > 0.5);
+	vec3 refractDirection = refract(rayDirection, apparentNormal, 1.0 / (1.0 + 0.3 * float(normal == apparentNormal))); // NOTE: this eta calculation is temporary
+	bool willRefract = refractDirection != vec3(0.0) && unoise1(vec4(point, time)) > materialAlbedo[materialId].a;
 	rayDirection = willRefract ? refractDirection : reflect(rayDirection, apparentNormal);
+	vec3 bounceNormal = willRefract ? -apparentNormal : apparentNormal;
+
+	// Apply gloss
+	vec3 gloss = unoise3(vec4(point, time));
+	vec3 perp1 = normalize(cross(rayDirection, apparentNormal));
+	vec3 perp2 = cross(perp1, apparentNormal); // already normalized
+	vec3 glossDirection = mat3(perp1, perp2, bounceNormal) * vec3(gloss.xy * 2.0 - 1.0, gloss.z);
+	float glossiness = materialGlossiness[materialId];
+	rayDirection = normalize(glossDirection * glossiness + rayDirection * (1.0 - glossiness));
 }
 
 void intersectPlane(vec3 rayOrigin, vec3 rayDirection, inout float t, inout vec3 normal, vec2 clipBounds, float clipSqrRadius)
@@ -145,7 +177,7 @@ bool trace(inout vec3 rayOrigin, inout vec3 rayDirection, inout vec3 color, inou
 	if (t != infinity)
 	{
 		rayOrigin = rayOrigin + rayDirection * t;
-		doBounce(normal, surfaceMaterialId[hitSurfaceId], color, rayDirection, bounceSignificance);
+		doBounce(rayOrigin, normal, surfaceMaterialId[hitSurfaceId], color, rayDirection, bounceSignificance);
 	}
 	return t != infinity;
 }
@@ -158,15 +190,19 @@ vec3 bleedChannels(vec3 color, float strength)
 
 void main()
 {
-	bool didHit = true;
-	vec3 rayO = rayOrigin;
-	vec3 rayD = rayDirection;
 	vec3 color = vec3(0.0);
-	vec3 bounceSignificance = vec3(1.0);
-	for (uint i = 0u; i < MAX_RAY_BOUNCES && didHit && any(greaterThan(bounceSignificance, MIN_RAY_SIGNIFICANCE)); i++)
-	{
-		didHit = trace(rayO, rayD, color, bounceSignificance);
-	}
+	// for (uint s = 0u; s < SAMPLES_PER_PIXEL; s++)
+	// {
+		bool didHit = true;
+		vec3 rayO = rayOrigin;
+		vec3 rayD = rayDirection;
+		vec3 bounceSignificance = vec3(1.0);
+		for (uint i = 0u; i < MAX_RAY_BOUNCES && didHit && any(greaterThan(bounceSignificance, MIN_RAY_SIGNIFICANCE)); i++)
+		{
+			didHit = trace(rayO, rayD, color, bounceSignificance);
+		}
+	// }
+	// FragColor = vec4(bleedChannels(color / float(SAMPLES_PER_PIXEL), 0.1), 1.0);
 	FragColor = vec4(bleedChannels(color, 0.1), 1.0);
 	// FragColor = vec4(color, 1.0);
 }

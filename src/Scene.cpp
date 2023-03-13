@@ -26,13 +26,14 @@ vec3 Scene::getRayColor(const Ray& ray) const
 
 void Scene::serializeForShader(
 	mat4* worldToLocal, GLuint* surfaceType,
-	GLuint* surfaceMaterialId, glm::vec4* materialEmission,
-	glm::vec4* materialAlbedo, GLuint& surfaceCount,
-	std::unordered_map<const Material*, GLuint>& materialIdTable) const
+	GLuint* surfaceMaterialId, vec4* materialEmission,
+	vec4* materialAlbedo, float* materialGlossiness,
+	GLuint& surfaceCount,
+	unordered_map<const Material*, GLuint>& materialIdTable) const
 {
 	surfaceCount = 0;
 	serializeForShaderRec(
-		worldToLocal, surfaceType, surfaceMaterialId, materialEmission, materialAlbedo, surfaceCount,
+		worldToLocal, surfaceType, surfaceMaterialId, materialEmission, materialAlbedo, materialGlossiness, surfaceCount,
 		materialIdTable,
 		identityTrans, &root);
 }
@@ -269,7 +270,8 @@ vec3 Scene::getRayColorRec(const Ray& ray, int depth, const vec3& significance) 
 void Scene::serializeForShaderRec(
 	mat4* worldToLocal, GLuint* surfaceType,
 	GLuint* surfaceMaterialId, vec4* materialEmission,
-	vec4* materialAlbedo, GLuint& surfaceCount,
+	vec4* materialAlbedo, float* materialGlossiness,
+	GLuint& surfaceCount,
 	unordered_map<const Material*, GLuint>& materialIdTable,
 	const mat4& currentWorldToLocal, const SceneObject* sceneObject) const
 {
@@ -287,8 +289,9 @@ void Scene::serializeForShaderRec(
 			GLuint newMaterialId = (GLuint)materialIdTable.size();
 			materialIdTable[material] = newMaterialId;
 			surfaceMaterialId[surfaceCount] = newMaterialId;
-			materialEmission[newMaterialId] = vec4(material->diffuseEmission, material->refractivity);
-			materialAlbedo[newMaterialId] = vec4(material->albedo, 0.0);
+			materialEmission[newMaterialId] = vec4(material->diffuseEmission, 0.f);
+			materialAlbedo[newMaterialId] = vec4(material->albedo, 1.f - material->refractivity);
+			materialGlossiness[newMaterialId] = material->glossiness;
 		}
 		else
 		{
@@ -299,7 +302,7 @@ void Scene::serializeForShaderRec(
 	for (const auto& c : sceneObject->getChildren())
 	{
 		serializeForShaderRec(
-			worldToLocal, surfaceType, surfaceMaterialId, materialEmission, materialAlbedo, surfaceCount,
+			worldToLocal, surfaceType, surfaceMaterialId, materialEmission, materialAlbedo, materialGlossiness, surfaceCount,
 			materialIdTable,
 			thisWorldToLocal, c);
 	}

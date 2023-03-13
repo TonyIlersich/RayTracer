@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "Scene.h"
 #include "ShaderProgram.h"
+#include "Timer.h"
 #include "Window.h"
 
 class Game
@@ -26,7 +27,8 @@ private:
 	// ComputeShader computeShader;
 	ShaderProgram shaderProgram;
 	Mesh screenMesh;
-	GLuint texId;
+	// GLuint texId;
+	Timer gameTime;
 };
 
 #endif

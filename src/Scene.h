@@ -17,7 +17,8 @@ public:
 	void serializeForShader(
 		glm::mat4* worldToLocal, GLuint* surfaceType,
 		GLuint* surfaceMaterialId, glm::vec4* materialEmission,
-		glm::vec4* materialAlbedo, GLuint& surfaceCount,
+		glm::vec4* materialAlbedo, float* materialGlossiness,
+		GLuint& surfaceCount,
 		std::unordered_map<const Material*, GLuint>& materialIdTable) const;
 
 	SceneObject root;
@@ -28,7 +29,8 @@ private:
 	void serializeForShaderRec(
 		glm::mat4* worldToLocal, GLuint* surfaceType,
 		GLuint* surfaceMaterialId, glm::vec4* materialEmission,
-		glm::vec4* materialAlbedo, GLuint& surfaceCount,
+		glm::vec4* materialAlbedo, float* materialGlossiness,
+		GLuint& surfaceCount,
 		std::unordered_map<const Material*, GLuint>& materialIdTable,
 		const glm::mat4& currentWorldToLocal, const SceneObject* sceneObject) const;
 

@@ -7,17 +7,23 @@
 class ShaderProgram
 {
 public:
-	ShaderProgram(const char* vertSource, const char* fragSource);
+	ShaderProgram();
 
 	void bind() const;
 	bool getIsBad() const;
 
 	template <typename T>
 	void setUniform(const std::string& name, const T& value);
+
+	void addShader(const char* source, GLenum type);
+	void link();
 	
 	GLuint id; // TODO: this is temporarily public! it should be private
 private:
+	void deleteAddedShaders();
+
 	bool isBad;
+	std::vector<GLuint> addedShaders;
 };
 
 template <typename T>
