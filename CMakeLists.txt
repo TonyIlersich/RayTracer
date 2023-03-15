@@ -11,28 +11,28 @@ include_directories(external)
 include_directories(src)
 
 add_executable(${PROJECT_NAME}
-	src/main.cpp
+	src/surfaces/Cube.cpp
+	src/surfaces/Cylinder.cpp
+	src/surfaces/Disc.cpp
+	src/surfaces/NhPlane.cpp
+	src/surfaces/Plane.cpp
+	src/surfaces/Quad.cpp
+	src/surfaces/Sphere.cpp
 	src/ComputeShader.cpp
-	src/Cube.cpp
-	src/Cylinder.cpp
-	src/Disc.cpp
 	src/Eye.cpp
 	src/Game.cpp
 	src/Hit.cpp
 	src/Image.cpp
+	src/main.cpp
 	src/Material.cpp
 	src/MaterialFactory.cpp
 	src/Mesh.cpp
-	src/NhPlane.cpp
-	src/Plane.cpp
-	src/Quad.cpp
 	src/Random.cpp
 	src/Ray.cpp
 	src/Scene.cpp
 	src/SceneFactory.cpp
 	src/SceneObject.cpp
 	src/ShaderProgram.cpp
-	src/Sphere.cpp
 	src/Timer.cpp
 	src/Window.cpp
 )
