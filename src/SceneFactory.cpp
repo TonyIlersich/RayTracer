@@ -1,6 +1,6 @@
 #include "MaterialFactory.h"
 #include "SceneFactory.h"
-#include "surfaces.h"
+#include "surfaces/surfaces.h"
 #include "utils.h"
 using namespace std;
 using namespace glm;

@@ -3,7 +3,7 @@
 
 #include "includes.h"
 #include "Interval.h"
-#include "Surface.h"
+#include "surfaces/Surface.h"
 #include "Material.h"
 
 class SceneObject

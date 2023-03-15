@@ -1,17 +1,17 @@
-#include "includes.h"
-#include "colors.h"
-#include "Cube.h"
-#include "Eye.h"
+// #include "includes.h"
+// #include "colors.h"
+// #include "surfaces/Cube.h"
+// #include "Eye.h"
 #include "Game.h"
-#include "Image.h"
-#include "Scene.h"
-#include "SceneFactory.h"
-#include "Sphere.h"
-#include "Timer.h"
-#include "utils.h"
-#include "Window.h"
-using namespace std;
-using namespace glm;
+// #include "Image.h"
+// #include "Scene.h"
+// #include "SceneFactory.h"
+// #include "surfaces/Sphere.h"
+// #include "Timer.h"
+// #include "utils.h"
+// #include "Window.h"
+// using namespace std;
+// using namespace glm;
 
 // /* Render to window
 int main()
