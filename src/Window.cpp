@@ -42,7 +42,7 @@ Window::Window():
 	}
 	glfwSetInputMode(wrapped, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-	glfwSwapInterval(0); // Vsync interval
+	glfwSwapInterval(1); // Vsync interval
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{

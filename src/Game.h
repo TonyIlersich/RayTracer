@@ -3,6 +3,7 @@
 
 #include "includes.h"
 // #include "ComputeShader.h"
+#include "EyeController.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "ShaderProgram.h"
@@ -23,6 +24,7 @@ private:
 
 	Scene* scene; // ownership
 	Eye eye;
+	EyeController eyeController;
 	Window window;
 	// ComputeShader computeShader;
 	ShaderProgram shaderProgram;

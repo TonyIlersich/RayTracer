@@ -33,10 +33,12 @@ static const void* getBufferData(const Scene& scene, GLsizeiptr& size)
 
 Game::Game():
 	scene(nullptr),
-	eye(radians(45.f), translate(identityTrans, vec3(0, 2, 2))), // TODO: this should probably be initialized elsewhere
-	// computeShader(computeSource),
-	shaderProgram()
+	eye(radians(45.f)) // TODO: this should probably be initialized elsewhere
 {
+	eyeController.setEye(&eye);
+	eyeController.setSensitivity(-0.0003f);
+	eyeController.moveCamera(upward * 2.f, vec2(0));
+
 	shaderProgram.addShader(vertSource, GL_VERTEX_SHADER);
 	shaderProgram.addShader(commonShaderSource, GL_FRAGMENT_SHADER);
 	shaderProgram.addShader(fragSource, GL_FRAGMENT_SHADER);
@@ -95,16 +97,16 @@ Game::Game():
 	};
 	constexpr auto count = sizeof(names)/sizeof(names[0]);
 	GLuint indices[count];
-	while (glGetError());
+	// while (glGetError());
 	glGetUniformIndices(shaderProgram.id, count, names, indices);
-	cerr << "error: " << glGetError() << '\n';
-	cerr << indices[0] << ", " << indices[1] << ", " << indices[2] << ", " << indices[3] << ", " << indices[4] << ", " << indices[5] << ", " << indices[6] << '\n';
+	// cerr << "error: " << glGetError() << '\n';
+	// cerr << indices[0] << ", " << indices[1] << ", " << indices[2] << ", " << indices[3] << ", " << indices[4] << ", " << indices[5] << ", " << indices[6] << '\n';
 
 	GLint offsets[count];
-	while (glGetError());
+	// while (glGetError());
 	glGetActiveUniformsiv(shaderProgram.id, count, indices, GL_UNIFORM_OFFSET, offsets);
-	cerr << "error: " << glGetError() << '\n';
-	cerr << offsets[0] << ", " << offsets[1] << ", " << offsets[2] << ", " << offsets[3] << ", " << offsets[4] << ", " << offsets[5] << ", " << offsets[6] << '\n';
+	// cerr << "error: " << glGetError() << '\n';
+	// cerr << offsets[0] << ", " << offsets[1] << ", " << offsets[2] << ", " << offsets[3] << ", " << offsets[4] << ", " << offsets[5] << ", " << offsets[6] << '\n';
 
 	glBindBuffer(GL_UNIFORM_BUFFER, bufferId);
 
@@ -121,23 +123,23 @@ Game::Game():
 	scene->serializeForShader(
 		worldToLocal, surfaceType, surfaceMaterialId, materialEmission, materialAlbedo, materialGlossiness, surfaceCount,
 		materialIdTable);
-	cerr << "surfaces: " << surfaceCount << '\n';
+	// cerr << "surfaces: " << surfaceCount << '\n';
 
-	while (glGetError());
+	// while (glGetError());
 	glBufferSubData(GL_UNIFORM_BUFFER, offsets[0], sizeof(worldToLocal), &worldToLocal);
-	cerr << "error: " << glGetError() << '\n';
+	// cerr << "error: " << glGetError() << '\n';
 	glBufferSubData(GL_UNIFORM_BUFFER, offsets[1], sizeof(surfaceType), &surfaceType);
-	cerr << "error: " << glGetError() << '\n';
+	// cerr << "error: " << glGetError() << '\n';
 	glBufferSubData(GL_UNIFORM_BUFFER, offsets[2], sizeof(surfaceMaterialId), &surfaceMaterialId);
-	cerr << "error: " << glGetError() << '\n';
+	// cerr << "error: " << glGetError() << '\n';
 	glBufferSubData(GL_UNIFORM_BUFFER, offsets[3], sizeof(materialEmission), &materialEmission);
-	cerr << "error: " << glGetError() << '\n';
+	// cerr << "error: " << glGetError() << '\n';
 	glBufferSubData(GL_UNIFORM_BUFFER, offsets[4], sizeof(materialAlbedo), &materialAlbedo);
-	cerr << "error: " << glGetError() << '\n';
+	// cerr << "error: " << glGetError() << '\n';
 	glBufferSubData(GL_UNIFORM_BUFFER, offsets[5], sizeof(materialGlossiness), &materialGlossiness);
-	cerr << "error: " << glGetError() << '\n';
+	// cerr << "error: " << glGetError() << '\n';
 	glBufferSubData(GL_UNIFORM_BUFFER, offsets[6], sizeof(surfaceCount), &surfaceCount);
-	cerr << "error: " << glGetError() << '\n';
+	// cerr << "error: " << glGetError() << '\n';
 
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
@@ -183,24 +185,13 @@ void Game::run()
 void Game::update()
 {
 	// Move eye
-	bool didMoveEye = false;
 	vec3 velocity(
 		window.getKeyDown(GLFW_KEY_D)     - window.getKeyDown(GLFW_KEY_A),
 		window.getKeyDown(GLFW_KEY_SPACE) - window.getKeyDown(GLFW_KEY_LEFT_CONTROL),
 		window.getKeyDown(GLFW_KEY_S)     - window.getKeyDown(GLFW_KEY_W));
-	if (velocity != vec3(0))
+	if (velocity != vec3(0) || window.getMouseDelta() != vec2(0))
 	{
-		eye.applyTrans(translate(identityTrans, mat3(eye.getTrans()) * velocity * 1.f/60.f));
-		didMoveEye = true;
-	}
-	if (window.getMouseDelta() != vec2(0))
-	{
-		// TODO: add vertical rotation
-		eye.setTrans(rotate(eye.getTrans(), tau * -0.2f * window.getMouseDelta().x / window.getSize().y, upward));
-		didMoveEye = true;
-	}
-	if (didMoveEye)
-	{
+		eyeController.moveCamera(velocity / 60.f, window.getMouseDelta());
 		shaderProgram.bind();
 		shaderProgram.setUniform("eyeTrans", eye.getTrans());
 	}

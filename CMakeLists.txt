@@ -20,6 +20,7 @@ add_executable(${PROJECT_NAME}
 	src/surfaces/Sphere.cpp
 	src/ComputeShader.cpp
 	src/Eye.cpp
+	src/EyeController.cpp
 	src/Game.cpp
 	src/Hit.cpp
 	src/Image.cpp
@@ -34,6 +35,7 @@ add_executable(${PROJECT_NAME}
 	src/SceneObject.cpp
 	src/ShaderProgram.cpp
 	src/Timer.cpp
+	src/Transform.cpp
 	src/Window.cpp
 )
 
