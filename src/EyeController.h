@@ -7,6 +7,8 @@
 class EyeController
 {
 public:
+	EyeController();
+
 	void setEye(Eye* eye);
 	void setSensitivity(float sensitivity);
 	void moveCamera(const glm::vec3& step, const glm::vec2& turn);

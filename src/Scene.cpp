@@ -289,7 +289,7 @@ void Scene::serializeForShaderRec(
 			GLuint newMaterialId = (GLuint)materialIdTable.size();
 			materialIdTable[material] = newMaterialId;
 			surfaceMaterialId[surfaceCount] = newMaterialId;
-			materialEmission[newMaterialId] = vec4(material->diffuseEmission, 0.f);
+			materialEmission[newMaterialId] = vec4(material->diffuseEmission, material->refractiveIndex);
 			materialAlbedo[newMaterialId] = vec4(material->albedo, 1.f - material->refractivity);
 			materialGlossiness[newMaterialId] = material->glossiness;
 		}

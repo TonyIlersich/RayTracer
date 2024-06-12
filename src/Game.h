@@ -26,8 +26,11 @@ private:
 	Eye eye;
 	EyeController eyeController;
 	Window window;
+	GLuint frameBufferId;
+	GLuint frameTextureId;
 	// ComputeShader computeShader;
-	ShaderProgram shaderProgram;
+	ShaderProgram rtShader;
+	ShaderProgram ppShader;
 	Mesh screenMesh;
 	// GLuint texId;
 	Timer gameTime;

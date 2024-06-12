@@ -3,6 +3,11 @@ R""(
 
 const uint max32 = 0xffffffffu;
 
+float h2f(uint h)
+{
+	return float(h) / float(max32);
+}
+
 // taken from https://nullprogram.com/blog/2018/07/31/
 uint hash(uint x)
 {
@@ -13,92 +18,129 @@ uint hash(uint x)
 	x ^= x >> 16;
 	return x;
 }
+uint hash(float x)
+{
+	return hash(floatBitsToUint(x));
+}
+uint hash(vec2 v)
+{
+	return hash(floatBitsToUint(v.x))
+		^ hash(floatBitsToUint(v.y) ^ 0x1u);
+}
+uint hash(vec3 v)
+{
+	return hash(floatBitsToUint(v.x))
+		^ hash(floatBitsToUint(v.y) ^ 0x1u)
+		^ hash(floatBitsToUint(v.z) ^ 0x2u);
+}
+uint hash(vec4 v)
+{
+	return hash(floatBitsToUint(v.x))
+		^ hash(floatBitsToUint(v.y) ^ 0x1u)
+		^ hash(floatBitsToUint(v.z) ^ 0x2u)
+		^ hash(floatBitsToUint(v.w) ^ 0x4u);
+}
 
 // 1D unoise
-float unoise1(uint seed)
-{
-	return float(hash(seed)) / float(max32);
-}
-float unoise1(float seed)
-{
-	return unoise1(floatBitsToUint(seed));
-}
-float unoise1(vec2 seed)
-{
-	return unoise1(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y));
-}
-float unoise1(vec3 seed)
-{
-	return unoise1(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y) ^ floatBitsToUint(seed.z));
-}
-float unoise1(vec4 seed)
-{
-	return unoise1(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y) ^ floatBitsToUint(seed.z) ^ floatBitsToUint(seed.w));
-}
+float unoise1(uint  seed) { return h2f(hash(seed)); }
+float unoise1(float seed) { return h2f(hash(seed)); }
+float unoise1(vec2  seed) { return h2f(hash(seed)); }
+float unoise1(vec3  seed) { return h2f(hash(seed)); }
+float unoise1(vec4  seed) { return h2f(hash(seed)); }
 
 // 2D unoise
 vec2 unoise2(uint seed)
 {
-	return vec2(unoise1(seed), unoise1(seed ^ 0x1u));
+	uint h = hash(seed);
+	return vec2(h2f(h), h2f(hash(h)));
 }
 vec2 unoise2(float seed)
 {
-	return unoise2(floatBitsToUint(seed));
+	uint h = hash(seed);
+	return vec2(h2f(h), h2f(hash(h)));
 }
 vec2 unoise2(vec2 seed)
 {
-	return unoise2(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y));
+	uint h = hash(seed);
+	return vec2(h2f(h), h2f(hash(h)));
 }
 vec2 unoise2(vec3 seed)
 {
-	return unoise2(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y) ^ floatBitsToUint(seed.z));
+	uint h = hash(seed);
+	return vec2(h2f(h), h2f(hash(h)));
 }
 vec2 unoise2(vec4 seed)
 {
-	return unoise2(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y) ^ floatBitsToUint(seed.z) ^ floatBitsToUint(seed.w));
+	uint h = hash(seed);
+	return vec2(h2f(h), h2f(hash(h)));
 }
 
 // 3D unoise
 vec3 unoise3(uint seed)
 {
-	return vec3(unoise1(seed), unoise1(seed ^ 0x1u), unoise1(seed ^ 0x2u));
+	uint h1 = hash(seed);
+	uint h2 = hash(h1);
+	return vec3(h2f(h1), h2f(h2), h2f(hash(h2)));
 }
 vec3 unoise3(float seed)
 {
-	return unoise3(floatBitsToUint(seed));
+	uint h1 = hash(seed);
+	uint h2 = hash(h1);
+	return vec3(h2f(h1), h2f(h2), h2f(hash(h2)));
 }
 vec3 unoise3(vec2 seed)
 {
-	return unoise3(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y));
+	uint h1 = hash(seed);
+	uint h2 = hash(h1);
+	return vec3(h2f(h1), h2f(h2), h2f(hash(h2)));
 }
 vec3 unoise3(vec3 seed)
 {
-	return unoise3(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y) ^ floatBitsToUint(seed.z));
+	uint h1 = hash(seed);
+	uint h2 = hash(h1);
+	return vec3(h2f(h1), h2f(h2), h2f(hash(h2)));
 }
 vec3 unoise3(vec4 seed)
 {
-	return unoise3(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y) ^ floatBitsToUint(seed.z) ^ floatBitsToUint(seed.w));
+	uint h1 = hash(seed);
+	uint h2 = hash(h1);
+	return vec3(h2f(h1), h2f(h2), h2f(hash(h2)));
 }
 
 // 4D unoise
 vec4 unoise4(uint seed)
 {
-	return vec4(unoise1(seed), unoise1(seed ^ 0x1u), unoise1(seed ^ 0x2u), unoise1(seed ^ 0x3u));
+	uint h1 = hash(seed);
+	uint h2 = hash(h1);
+	uint h3 = hash(h2);
+	return vec4(h2f(h1), h2f(h2), h2f(h3), h2f(hash(h3)));
 }
 vec4 unoise4(float seed)
 {
-	return unoise4(floatBitsToUint(seed));
+	uint h1 = hash(seed);
+	uint h2 = hash(h1);
+	uint h3 = hash(h2);
+	return vec4(h2f(h1), h2f(h2), h2f(h3), h2f(hash(h3)));
 }
 vec4 unoise4(vec2 seed)
 {
-	return unoise4(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y));
+	uint h1 = hash(seed);
+	uint h2 = hash(h1);
+	uint h3 = hash(h2);
+	return vec4(h2f(h1), h2f(h2), h2f(h3), h2f(hash(h3)));
 }
 vec4 unoise4(vec3 seed)
 {
-	return unoise4(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y) ^ floatBitsToUint(seed.z));
+	uint h1 = hash(seed);
+	uint h2 = hash(h1);
+	uint h3 = hash(h2);
+	return vec4(h2f(h1), h2f(h2), h2f(h3), h2f(hash(h3)));
 }
 vec4 unoise4(vec4 seed)
 {
-	return unoise4(floatBitsToUint(seed.x) ^ floatBitsToUint(seed.y) ^ floatBitsToUint(seed.z) ^ floatBitsToUint(seed.w));
+	uint h1 = hash(seed);
+	uint h2 = hash(h1);
+	uint h3 = hash(h2);
+	return vec4(h2f(h1), h2f(h2), h2f(h3), h2f(hash(h3)));
 }
 )""

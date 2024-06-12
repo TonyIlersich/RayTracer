@@ -25,6 +25,6 @@ Ray operator*(const glm::mat4& trans, const Ray& ray)
 
 ostream& operator<<(ostream& out, const Ray& ray)
 {
-	out << ray.origin << " ==" << ray.direction << "==>";
+	out << ray.origin << " =" << ray.direction << "=>";
 	return out;
 }

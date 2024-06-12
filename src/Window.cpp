@@ -3,14 +3,20 @@
 using namespace std;
 using namespace glm;
 
-// TODO: should this be a member function?
-static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+unordered_map<GLFWwindow*, Window*> Window::windowLookup;
+
+void Window::onFrameBufferSizeChange(GLFWwindow* glfwWindow, int width, int height)
 {
+	Window* window = windowLookup[glfwWindow];
+	window->size = ivec2(width, height);
+	window->didSizeChangeThisFrame = true;
 	glViewport(0, 0, width, height);
 }
 
 Window::Window():
 	wrapped(nullptr),
+	size(800, 600),
+	didSizeChangeThisFrame(false),
 	keyStates{KF_NONE},
 	mouseDelta(0.f)
 {
@@ -22,15 +28,16 @@ Window::Window():
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-	wrapped = glfwCreateWindow(800, 600, "Ray Tracer", nullptr, nullptr);
+	wrapped = glfwCreateWindow(size.x, size.y, "Ray Tracer", nullptr, nullptr);
 	if (wrapped == nullptr)
 	{
 		cerr << "Failed to create GLFW window\n";
 		glfwTerminate();
 		throw runtime_error("Failed to create GLFW window");
 	}
+	windowLookup[wrapped] = this;
 	glfwMakeContextCurrent(wrapped);
-	glfwSetFramebufferSizeCallback(wrapped, framebuffer_size_callback);
+	glfwSetFramebufferSizeCallback(wrapped, &Window::onFrameBufferSizeChange);
 
 	glfwSetInputMode(wrapped, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Lock cursor to window
 	glfwSetCursorPos(wrapped, 0.0, 0.0);
@@ -54,11 +61,17 @@ Window::Window():
 
 Window::~Window()
 {
+	if (wrapped != nullptr)
+	{
+		windowLookup.erase(wrapped);
+	}
 	glfwTerminate();
 }
 
 void Window::pollEvents()
 {
+	didSizeChangeThisFrame = false;
+
 	glfwPollEvents();
 	updateKeyStates();
 	updateMouseState();
@@ -80,6 +93,21 @@ void Window::display()
 	glfwSwapBuffers(wrapped);
 }
 
+bool Window::shouldClose() const
+{
+	return glfwWindowShouldClose(wrapped);
+}
+
+const ivec2& Window::getSize() const
+{
+	return size;
+}
+
+bool Window::getDidSizeChangeThisFrame() const
+{
+	return didSizeChangeThisFrame;
+}
+
 Window::KeyFlags Window::getKeyState(int key) const
 {
 	return keyStates[key];
@@ -98,18 +126,6 @@ bool Window::getKeyFresh(int key) const
 const vec2& Window::getMouseDelta() const
 {
 	return mouseDelta;
-}
-
-ivec2 Window::getSize() const
-{
-	ivec2 size;
-	glfwGetWindowSize(wrapped, &size.x, &size.y);
-	return size;
-}
-
-bool Window::shouldClose() const
-{
-	return glfwWindowShouldClose(wrapped);
 }
 
 void Window::updateKeyStates()

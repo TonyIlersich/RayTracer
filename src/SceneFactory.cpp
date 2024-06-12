@@ -14,21 +14,29 @@ Scene* SceneFactory::createSampleScene()
 {
 	Scene* scene = new Scene();
 
+	const Material* sunlight   = MaterialFactory::createEmissive(10'000.f * white);
 	const Material* mirror     = MaterialFactory::createReflective();
-	const Material* glass      = MaterialFactory::createDielectric(1.3f, 0.9f, white, 0.1f);
+	const Material* glass      = MaterialFactory::createDielectric(1.1f, 0.99f);
 	const Material* tile       = MaterialFactory::createMatte(gray);
-	const Material* redLaser   = MaterialFactory::createMaterial(10.f * red,   0.5f * white, white, 1.f, refractiveIndexAir, 0.f);
-	const Material* greenLaser = MaterialFactory::createMaterial(10.f * blue, 0.5f * white, white, 1.f, refractiveIndexAir, 0.f);
-	const Material* blueLaser  = MaterialFactory::createMaterial(10.f * green,  0.5f * white, white, 1.f, refractiveIndexAir, 0.f);
-	const Material* glowing    = MaterialFactory::createEmissive(black, yellow);
+	const Material* redLaser   = MaterialFactory::createMaterial(5.f * red, black, white, 1.f, refractiveIndexAir, 0.f);
+	const Material* greenLaser = MaterialFactory::createMaterial(5.f * blue, black, white, 1.f, refractiveIndexAir, 0.f);
+	const Material* blueLaser  = MaterialFactory::createMaterial(5.f * green, black, white, 1.f, refractiveIndexAir, 0.f);
+	const Material* glowing    = MaterialFactory::createEmissive(1.f * yellow);
+
+	SceneObject* sun = new SceneObject();
+	sun->setSurface(&surfaces::sphere);
+	sun->setMaterial(sunlight);
+	sun->applyTransform(scale(identityTrans, vec3(100, 100, 100)));
+	sun->applyTransform(translate(identityTrans, vec3(-200, 1000, 0)));
+	scene->root.addChild(sun);
 
 	SceneObject* mirrorObject = new SceneObject();
-	mirrorObject->setSurface(&surfaces::cylinder);
+	mirrorObject->setSurface(&surfaces::quad);
 	mirrorObject->setMaterial(mirror);
-	mirrorObject->applyTransform(scale(identityTrans, vec3(1.5f,0.2f,2.5)));
-	mirrorObject->applyTransform(rotate(identityTrans, tau *  0.26f, vec3(0,0,1)));
-	mirrorObject->applyTransform(rotate(identityTrans, tau * -0.10f, vec3(0,1,0)));
-	mirrorObject->applyTransform(translate(identityTrans, vec3(-3.5f,1.75f,-10)));
+	mirrorObject->applyTransform(scale(identityTrans, vec3(2.f, 1.f, 4.f)));
+	mirrorObject->applyTransform(rotate(identityTrans, tau * .28f, vec3(1,0,0)));
+	mirrorObject->applyTransform(rotate(identityTrans, tau * .25f, vec3(0,1,0)));
+	mirrorObject->applyTransform(translate(identityTrans, vec3(-4.f, 3.f, -10.f)));
 	scene->root.addChild(mirrorObject);
 
 	SceneObject* glassBall = new SceneObject();
@@ -37,16 +45,17 @@ Scene* SceneFactory::createSampleScene()
 	glassBall->applyTransform(translate(identityTrans, vec3(0,1.5f,-9)));
 	scene->root.addChild(glassBall);
 
-	SceneObject* redLaserBall = new SceneObject();
-	redLaserBall->setSurface(&surfaces::sphere);
-	redLaserBall->setMaterial(redLaser);
-	redLaserBall->applyTransform(translate(identityTrans, vec3(1.5f,5,-10)));
-	scene->root.addChild(redLaserBall);
+	SceneObject* redLaserBeam = new SceneObject();
+	redLaserBeam->setSurface(&surfaces::cylinder);
+	redLaserBeam->setMaterial(redLaser);
+	redLaserBeam->applyTransform(scale(identityTrans, vec3(0.2f, 2.f, 0.2f)));
+	redLaserBeam->applyTransform(translate(identityTrans, vec3(2.f, 5.f, -10.f)));
+	scene->root.addChild(redLaserBeam);
 
 	SceneObject* greenLaserBall = new SceneObject();
 	greenLaserBall->setSurface(&surfaces::sphere);
 	greenLaserBall->setMaterial(greenLaser);
-	greenLaserBall->applyTransform(translate(identityTrans, vec3(-1.5f,5,-10)));
+	greenLaserBall->applyTransform(translate(identityTrans, vec3(-1.5f, 5.f, -9.f)));
 	scene->root.addChild(greenLaserBall);
 
 	SceneObject* blueLaserBall = new SceneObject();
@@ -58,9 +67,16 @@ Scene* SceneFactory::createSampleScene()
 	SceneObject* glowCube = new SceneObject();
 	glowCube->setSurface(&surfaces::cube);
 	glowCube->setMaterial(glowing);
-	glowCube->applyTransform(rotate(identityTrans, tau / 24.f, vec3(0,1,0)));
-	glowCube->applyTransform(translate(identityTrans, vec3(4,1.25f,-10)));
+	glowCube->applyTransform(rotate(identityTrans, tau / 12.f, vec3(0,1,0)));
+	glowCube->applyTransform(translate(identityTrans, vec3(5.f, 2.f, -10.f)));
 	scene->root.addChild(glowCube);
+
+	SceneObject* glassCube = new SceneObject();
+	glassCube->setSurface(&surfaces::cube);
+	glassCube->setMaterial(glass);
+	glassCube->applyTransform(scale(identityTrans, vec3(2.f, 2.f, 0.5f)));
+	glassCube->applyTransform(translate(identityTrans, vec3(3.f, 2.5f, -5.f)));
+	scene->root.addChild(glassCube);
 
 	SceneObject* ground = new SceneObject();
 	ground->setSurface(&surfaces::plane);

@@ -1,6 +1,13 @@
 #include "EyeController.h"
 using namespace glm;
 
+EyeController::EyeController():
+	eye(nullptr),
+	position(0.f),
+	rotation(0.f),
+	sensitivity(1.f)
+{}
+
 void EyeController::setEye(Eye* eye)
 {
 	this->eye = eye;
